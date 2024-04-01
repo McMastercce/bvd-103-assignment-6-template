@@ -11,7 +11,7 @@
     "test": "npm run generate-routes && vitest",
     "test:ci": "npm run generate-routes && vitest run",
     "generate-routes": "tsoa spec-and-routes",
-    "generate-client": "npm run generate-routes & openapi-generator-cli generate -i ./build/swagger.json -o ./client -g typescript-fetch"
+    "generate-client": "openapi-generator-cli generate -i ./build/swagger.json -o ./client -g typescript-fetch"
   },
   "keywords": [],
   "author": "",
