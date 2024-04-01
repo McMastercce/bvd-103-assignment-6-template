@@ -31,5 +31,6 @@
     "types": [
       "vitest/importMeta"
     ]
-  }
+  },
+  "exclude": ["./client"]
 }
