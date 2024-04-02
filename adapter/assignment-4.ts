@@ -84,7 +84,7 @@ async function fulfilOrder (order: OrderId, booksFulfilled: Array<{ book: BookID
   const result = await fetch(`http://localhost:3000/fulfil/${order}`, {
     method: 'put',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(booksFulfilled)
+    body: JSON.stringify({ booksFulfilled })
   })
   if (!result.ok) {
     throw new Error(`Couldnt Fulfil ${await result.text()}`)

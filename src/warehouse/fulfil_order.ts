@@ -1,9 +1,7 @@
-import { type ZodRouter } from 'koa-zod-router'
 import { type ShelfId, type BookID, type OrderId } from '../../adapter/assignment-4'
-import { InMemoryWarehouse, type WarehouseData, getDefaultWarehouseData } from './warehouse_data'
-import { z } from 'zod'
+import { InMemoryWarehouse, type WarehouseData } from './warehouse_data'
 
-async function fulfilOrder (data: WarehouseData, orderId: OrderId, booksFulfilled: Array<{ book: BookID, shelf: ShelfId, numberOfBooks: number }>): Promise<void> {
+export async function fulfilOrder (data: WarehouseData, orderId: OrderId, booksFulfilled: Array<{ book: BookID, shelf: ShelfId, numberOfBooks: number }>): Promise<void> {
   const order = await data.getOrder(orderId)
   if (order === false) {
     throw new Error('no such order')
@@ -37,39 +35,6 @@ async function fulfilOrder (data: WarehouseData, orderId: OrderId, booksFulfille
     await data.placeBookOnShelf(book, shelf, numberOfBooks)
   }))
 }
-
-export function fulfilOrderRouter (router: ZodRouter): void {
-  router.register({
-    name: 'fulfil order',
-    method: 'put',
-    path: '/fulfil/:order',
-    validate: {
-      params: z.object({
-        order: z.string()
-      }),
-      body: z.object({
-        book: z.string(),
-        shelf: z.string(),
-        numberOfBooks: z.number()
-      }).array()
-    },
-    handler: async (ctx, next) => {
-      const { order } = ctx.request.params
-      const booksFulfilled = ctx.request.body
-
-      try {
-        await fulfilOrder(await getDefaultWarehouseData(), order, booksFulfilled)
-
-        ctx.status = 200
-        return await next()
-      } catch (e) {
-        ctx.status = 500
-        return await next()
-      }
-    }
-  })
-}
-
 if (import.meta.vitest !== undefined) {
   const { test, expect } = import.meta.vitest
 

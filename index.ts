@@ -8,6 +8,7 @@ import { RegisterRoutes } from './build/routes'
 import swagger from './build/swagger.json'
 import KoaRouter from '@koa/router'
 import { koaSwagger } from 'koa2-swagger-ui'
+import bodyParser from 'koa-bodyparser'
 
 const app = new Koa()
 
@@ -22,6 +23,7 @@ const router = zodRouter({ zodRouter: { exposeRequestErrors: true } })
 setupWarehouseRoutes(router)
 setupBookRoutes(router)
 
+app.use(bodyParser())
 app.use(router.routes())
 
 const koaRouter = new KoaRouter()
