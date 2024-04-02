@@ -1,9 +1,11 @@
-import { BodyProp, Controller, Get, Path, Put, Route, SuccessResponse } from 'tsoa'
+import { BodyProp, Controller, Get, Path, Post, Put, Route, SuccessResponse } from 'tsoa'
 import { getBookInfo } from './get_book_info'
 import { getDefaultWarehouseData } from './warehouse_data'
-import { type ShelfId, type BookID, type OrderId, type FulfilledBooks } from './documented_types'
+import { type ShelfId, type BookID, type OrderId, type FulfilledBooks, type OrderPlacement, type Order } from './documented_types'
 import { placeBooksOnShelf } from './place_on_shelf'
 import { fulfilOrder } from './fulfil_order'
+import { placeOrder } from './place_order'
+import { listOrders } from './list_orders'
 
 @Route('warehouse')
 export class WarehouseRoutes extends Controller {
@@ -35,7 +37,7 @@ export class WarehouseRoutes extends Controller {
 }
 
 @Route('fulfil')
-export class FulfilOrder extends Controller {
+export class FulfilOrderRoutes extends Controller {
   /**
      * Fulfil an order by taking all the relevant book copies for the order off the shelves
      * @param order The Order ID
@@ -55,5 +57,37 @@ export class FulfilOrder extends Controller {
       this.setStatus(500)
       console.error('Error Fulfilling Order', e)
     }
+  }
+}
+
+@Route('order')
+export class OrderRoutes extends Controller {
+  /**
+     * Place an order
+     * @param order An array of the ordered book id's
+     * @returns {OrderId}
+     */
+  @Post()
+  @SuccessResponse(201, 'created')
+  public async placeOrder (
+    @BodyProp('order') order: OrderPlacement
+  ): Promise<OrderId> {
+    this.setStatus(201)
+    try {
+      const result = await placeOrder(await getDefaultWarehouseData(), order)
+      return result
+    } catch (e) {
+      this.setStatus(500)
+      return ''
+    }
+  }
+
+  /**
+   * Get all the pending orders
+   * @returns {Order[]}
+   */
+  @Get()
+  public async listOrders (): Promise<Order[]> {
+    return await listOrders(await getDefaultWarehouseData())
   }
 }

@@ -2,7 +2,6 @@ import Koa from 'koa'
 import cors from '@koa/cors'
 import qs from 'koa-qs'
 import zodRouter from 'koa-zod-router'
-import { setupWarehouseRoutes } from './src/warehouse'
 import { setupBookRoutes } from './src/books'
 import { RegisterRoutes } from './build/routes'
 import swagger from './build/swagger.json'
@@ -20,7 +19,6 @@ app.use(cors())
 
 const router = zodRouter({ zodRouter: { exposeRequestErrors: true } })
 
-setupWarehouseRoutes(router)
 setupBookRoutes(router)
 
 app.use(bodyParser())
