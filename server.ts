@@ -9,9 +9,24 @@ import KoaRouter from '@koa/router'
 import { koaSwagger } from 'koa2-swagger-ui'
 import bodyParser from 'koa-bodyparser'
 import { type Server, type IncomingMessage, type ServerResponse } from 'http'
+import { type AppBookDatabaseState, getBookDatabase } from './src/database_access'
+import { type AppWarehouseDatabaseState, getDefaultWarehouseDatabase } from './src/warehouse/warehouse_database'
 
-export default function (port?: number): Server<typeof IncomingMessage, typeof ServerResponse> {
-  const app = new Koa()
+export default async function (port?: number, randomizeDbs?: boolean): Promise<{ server: Server<typeof IncomingMessage, typeof ServerResponse>, state: AppBookDatabaseState & AppWarehouseDatabaseState }> {
+  const bookDb = getBookDatabase(randomizeDbs === true ? undefined : 'mcmasterful-books')
+  const warehouseDb = await getDefaultWarehouseDatabase(randomizeDbs === true ? undefined : 'mcmasterful-warehouse')
+
+  const state: AppBookDatabaseState & AppWarehouseDatabaseState = {
+    books: bookDb,
+    warehouse: warehouseDb
+  }
+
+  const app = new Koa<AppBookDatabaseState & AppWarehouseDatabaseState, Koa.DefaultContext>()
+
+  app.use(async (ctx, next): Promise<void> => {
+    ctx.state = state
+    await next()
+  })
 
   // We use koa-qs to enable parsing complex query strings, like our filters.
   qs(app)
@@ -21,7 +36,7 @@ export default function (port?: number): Server<typeof IncomingMessage, typeof S
 
   const router = zodRouter({ zodRouter: { exposeRequestErrors: true } })
 
-  setupBookRoutes(router)
+  setupBookRoutes(router, state.books)
 
   app.use(bodyParser())
   app.use(router.routes())
@@ -40,7 +55,10 @@ export default function (port?: number): Server<typeof IncomingMessage, typeof S
     }
 
   }))
-  return app.listen(port, () => {
-    console.log('listening')
-  })
+  return {
+    server: app.listen(port, () => {
+      console.log('listening')
+    }),
+    state
+  }
 }

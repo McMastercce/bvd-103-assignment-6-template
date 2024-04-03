@@ -1,3 +1,3 @@
 import server from './server'
 
-server(3000)
+await server(3000)
