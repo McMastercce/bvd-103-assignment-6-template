@@ -32,5 +32,5 @@
       "vitest/importMeta"
     ]
   },
-  "exclude": ["./client"]
+  "exclude": ["client/**/*", "adapter/**/*", "tests/**/*"]
 }
